@@ -77,7 +77,7 @@ window.addEventListener('resize', resize);
 resize();
 
 // Init stars background
-for(let i=0; i<200; i++) {
+for(let i=0; i<80; i++) {
     stars.push({
         x: (Math.random() - 0.5) * 4000,
         y: (Math.random() - 0.5) * 4000,
@@ -248,12 +248,10 @@ function render() {
     ctx.strokeStyle = '#0fbcf9';
     ctx.stroke();
 
-    // Draw Grid on Arena
+    // Draw Grid on Arena (Optimized)
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.lineWidth = 2;
-    ctx.save();
-    ctx.clip(); 
-    for(let i = -arenaRadius; i < arenaRadius; i+=100) {
+    for(let i = -arenaRadius; i < arenaRadius; i+=150) {
         ctx.beginPath();
         ctx.moveTo(i, -arenaRadius);
         ctx.lineTo(i, arenaRadius);
@@ -263,22 +261,21 @@ function render() {
         ctx.lineTo(arenaRadius, i);
         ctx.stroke();
     }
-    ctx.restore();
 
     // Draw Buffs
     buffs.forEach(b => {
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-        if (b.type === 'size') {
-            ctx.fillStyle = '#ff3838'; // Red for size
-            ctx.shadowColor = '#ff3838';
-        } else {
-            ctx.fillStyle = '#32ff7e'; // Green for speed
-            ctx.shadowColor = '#32ff7e';
-        }
-        ctx.shadowBlur = 15;
+        
+        ctx.fillStyle = b.type === 'size' ? '#ff3838' : '#32ff7e';
         ctx.fill();
-        ctx.shadowBlur = 0;
+
+        // Fake glow for buffs
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius + 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
         
         ctx.fillStyle = 'white';
         ctx.font = 'bold 16px Montserrat';
@@ -311,17 +308,20 @@ function render() {
     players.forEach(p => {
         if (p.isDead) return;
 
-        // Glow effect
-        ctx.shadowBlur = p.buffs.includes('size') ? 40 : 20;
-        ctx.shadowColor = p.color;
-        
+        // Fake Glow effect (Optimized)
+        ctx.globalAlpha = 0.3;
         ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius + (p.buffs.includes('size') ? 15 : 8), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        
+        // Main circle
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
 
         // Inner circle
-        ctx.shadowBlur = 0;
         ctx.fillStyle = p.buffs.includes('speed') ? '#fff200' : '#2d3436';
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius * 0.6, 0, Math.PI * 2);
